@@ -10,29 +10,26 @@ function createEmployeeRecord(employeeData) {
     };
 }
 
-// Create multiple employee records from an array of arrays
-function createEmployeeRecords(employeeDataArray) {
-    return employeeDataArray.map(data => createEmployeeRecord(data));
-}
-
-// Create a time-in event and add it to the employee's record
+// Context-aware time-in event creation
 function createTimeInEvent(employeeRecord, dateTimeString) {
     const [date, hour] = dateTimeString.split(' ');
     employeeRecord.timeInEvents.push({
         type: "TimeIn",
         hour: parseInt(hour, 10),
-        date
+        date,
+        employee: `${employeeRecord.firstName} ${employeeRecord.familyName}`
     });
     return employeeRecord;
 }
 
-// Create a time-out event and add it to the employee's record
+// Context-aware time-out event creation
 function createTimeOutEvent(employeeRecord, dateTimeString) {
     const [date, hour] = dateTimeString.split(' ');
     employeeRecord.timeOutEvents.push({
         type: "TimeOut",
         hour: parseInt(hour, 10),
-        date
+        date,
+        employee: `${employeeRecord.firstName} ${employeeRecord.familyName}`
     });
     return employeeRecord;
 }
@@ -55,7 +52,33 @@ function allWagesFor(employeeRecord) {
     return dates.reduce((total, date) => total + wagesEarnedOnDate(employeeRecord, date), 0);
 }
 
+// Create a bound version of any function
+function bindFunction(context, functionName) {
+    const fn = window[functionName];
+    return fn.bind(context);
+}
+
+// Create multiple employee records from an array
+function createEmployeeRecords(employeeDataArray) {
+    return employeeDataArray.map(data => createEmployeeRecord(data));
+}
+
 // Calculate payroll for multiple employees
 function calculatePayroll(employeeRecords) {
     return employeeRecords.reduce((total, record) => total + allWagesFor(record), 0);
 }
+
+// Example usage:
+// const employee = createEmployeeRecord(["John", "Doe", "Developer", 25]);
+// const boundTimeIn = bindFunction(employee, 'createTimeInEvent');
+// boundTimeIn("2025-06-27 0900");
+// employee.createTimeOutEvent("2025-06-27 1700");
+// console.log(allWagesFor(employee)); // Outputs the total wages for the day
+
+// Export for testing
+module.exports = {
+    createEmployeeRecord,
+    createEmployeeRecords,
+    calculatePayroll,
+    bindFunction
+};
